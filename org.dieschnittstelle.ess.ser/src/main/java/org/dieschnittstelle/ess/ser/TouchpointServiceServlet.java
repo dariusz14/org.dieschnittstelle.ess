@@ -1,5 +1,6 @@
 package org.dieschnittstelle.ess.ser;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import jakarta.servlet.http.HttpServlet;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import static org.dieschnittstelle.ess.utils.Utils.*;
 
 import org.apache.logging.log4j.Logger;
+import org.dieschnittstelle.ess.entities.crm.AbstractTouchpoint;
 
 public class TouchpointServiceServlet extends HttpServlet {
 
@@ -52,8 +54,8 @@ public class TouchpointServiceServlet extends HttpServlet {
 	/*
 	 * TODO: SER3 server-side implementation of createNewTouchpoint
 	 */
-	/*
-	@Override	
+
+	@Override
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) {
 
@@ -61,32 +63,56 @@ public class TouchpointServiceServlet extends HttpServlet {
 		// no need to check the uri that has been used
 
 		// obtain the executor for reading out the touchpoints from the servlet context using the touchpointCRUD attribute
-
+		TouchpointCRUDExecutor exec = (TouchpointCRUDExecutor) getServletContext()
+				.getAttribute("touchpointCRUD");
 		try {
 			// create an ObjectInputStream from the request's input stream
-		
+			ObjectInputStream ois = new ObjectInputStream(request.getInputStream());
+
 			// read an AbstractTouchpoint object from the stream
-		
+			AbstractTouchpoint receivedTp = (AbstractTouchpoint) ois.readObject();
+
 			// call the create method on the executor and take its return value
-		
+			exec.createTouchpoint(receivedTp);
+
 			// set the response status as successful, using the appropriate
 			// constant from HttpServletResponse
-		
+			response.setStatus(HttpServletResponse.SC_OK);
+
 			// then write the object to the response's output stream, using a
 			// wrapping ObjectOutputStream
-		
+			ObjectOutputStream oos = new ObjectOutputStream(response.getOutputStream());
+
 			// ... and write the object to the stream
-		
+			oos.writeObject(receivedTp);
+			oos.close();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
 	}
-	*/
 
 	/*
 	 * TODO: SER4 server-side implementation of deleteTouchpoint
 	 */
+	@Override
+	protected void doDelete(HttpServletRequest request, HttpServletResponse response){
+		TouchpointCRUDExecutor exec = (TouchpointCRUDExecutor) getServletContext()
+				.getAttribute("touchpointCRUD");
+		try {
+			// Retrieve ID of to be deleted Touchpoint
+			String uri = request.getRequestURI();
+			show("Server received DELETE for URI: %s",uri);
+			String[] splitUri = uri.split("/");
+			long id = Long.parseLong(splitUri[splitUri.length-1]);
+			show("Server extracted ID %d for DELETE", id);
 
-
+			// Set response code, delete
+			response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+			boolean succeeded = exec.deleteTouchpoint(id);
+			if (!succeeded) response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
