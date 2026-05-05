@@ -1,6 +1,11 @@
 package org.dieschnittstelle.ess.jrs;
 
-import org.dieschnittstelle.ess.entities.erp.IndividualisedProductItem;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Context;
+import org.dieschnittstelle.ess.entities.GenericCRUDExecutor;
+import org.dieschnittstelle.ess.entities.erp.AbstractProduct;
 
 import java.util.List;
 
@@ -10,36 +15,51 @@ import java.util.List;
 
 public class ProductCRUDServiceImpl implements IProductCRUDService {
 
-	@Override
-	public IndividualisedProductItem createProduct(
-			IndividualisedProductItem prod) {
-		// TODO Auto-generated method stub
-		return null;
+	private GenericCRUDExecutor<AbstractProduct> productCRUD;
+
+	public ProductCRUDServiceImpl(@Context ServletContext servletContext, @Context HttpServletRequest request) {
+		// read out the dataAccessor
+		this.productCRUD = (GenericCRUDExecutor<AbstractProduct>) servletContext.getAttribute("productCRUD");
 	}
 
 	@Override
-	public List<IndividualisedProductItem> readAllProducts() {
-		// TODO Auto-generated method stub
-		return null;
+	public AbstractProduct createProduct(
+			AbstractProduct prod) {
+		return this.productCRUD.createObject(prod);
 	}
 
 	@Override
-	public IndividualisedProductItem updateProduct(long id,
-			IndividualisedProductItem update) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<AbstractProduct> readAllProducts() {
+		return this.productCRUD.readAllObjects();
+	}
+
+	@Override
+	public AbstractProduct updateProduct(long id, AbstractProduct update) {
+		AbstractProduct prod = this.productCRUD.readObject(id);
+		if(prod == null){
+			throw new NotFoundException(String.format("Product %d not found", id));
+		}
+		prod.setId(update.getId());
+		prod.setName(update.getName());
+		prod.setPrice(update.getPrice());
+		return this.productCRUD.updateObject(prod);
 	}
 
 	@Override
 	public boolean deleteProduct(long id) {
-		// TODO Auto-generated method stub
-		return false;
+		AbstractProduct prod = this.productCRUD.readObject(id);
+		if(prod == null){
+			throw new NotFoundException(String.format("Product %d not found", id));
+		}
+		return this.productCRUD.deleteObject(id);
 	}
 
 	@Override
-	public IndividualisedProductItem readProduct(long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public AbstractProduct readProduct(long id) {
+		AbstractProduct prod = this.productCRUD.readObject(id);
+		if(prod == null){
+			throw new NotFoundException(String.format("Product %d not found", id));
+		}
+		return prod;
 	}
-	
 }
