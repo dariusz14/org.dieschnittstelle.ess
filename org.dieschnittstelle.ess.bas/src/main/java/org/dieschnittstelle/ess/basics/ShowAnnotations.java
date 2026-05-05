@@ -3,6 +3,7 @@ package org.dieschnittstelle.ess.basics;
 
 import org.dieschnittstelle.ess.basics.annotations.AnnotatedStockItemBuilder;
 import org.dieschnittstelle.ess.basics.annotations.StockItemProxyImpl;
+import org.dieschnittstelle.ess.basics.annotations.DisplayAs;
 
 import static org.dieschnittstelle.ess.basics.reflection.ReflectedStockItemBuilder.getAccessorNameForField;
 
@@ -50,11 +51,19 @@ public class ShowAnnotations {
             List<String> fieldsWithValues = new ArrayList<>();
 
             for (Field field : klass.getDeclaredFields()) {
-                String fieldName = field.getName();
-                String methodName = getAccessorNameForField("get", fieldName);
+                // Check if field of class is annotated, if so, get the name for string representation
+                String displayName;
+                if(field.isAnnotationPresent(DisplayAs.class)){
+                    displayName = field.getAnnotation(DisplayAs.class).value();
+                } else {
+                    displayName = field.getName();
+                }
+                // Access getter methods using field name
+                String methodName = getAccessorNameForField("get", field.getName());
                 Method getMethod = klass.getMethod(methodName);
                 var getValue = getMethod.invoke(instance).toString();
-                fieldsWithValues.add(String.format("%s: %s", fieldName, getValue));
+
+                fieldsWithValues.add(String.format("%s: %s", displayName, getValue));
             }
 
             String joinedList = String.join(", ", fieldsWithValues);
