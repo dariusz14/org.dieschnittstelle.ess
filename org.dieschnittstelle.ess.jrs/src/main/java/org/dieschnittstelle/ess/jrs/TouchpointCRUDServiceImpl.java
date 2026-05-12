@@ -5,7 +5,6 @@ import java.util.List;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Context;
 
 import org.apache.logging.log4j.Logger;
@@ -69,5 +68,13 @@ public class TouchpointCRUDServiceImpl implements ITouchpointCRUDService {
     /*
      * UE JRS1: implement the method for updating touchpoints
      */
-
+    @Override
+    public StationaryTouchpoint updateTouchpoint(long id, StationaryTouchpoint touchpoint){
+        StationaryTouchpoint tp = this.touchpointCRUD.readObject(id);
+        if (tp == null) {
+            throw new NotFoundException("The touchpoint with id " + id + " does not exist!");
+        }
+        tp.setId(touchpoint.getId());
+        return this.touchpointCRUD.updateObject(touchpoint);
+    }
 }

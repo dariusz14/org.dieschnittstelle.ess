@@ -216,8 +216,9 @@ public class JSONObjectMapper {
 				if (Modifier.isAbstract(((Class) type).getModifiers())) {
 					// TODO: include a handling for abstract classes considering
 					// the JsonTypeInfo annotation that might be set on type
-					throw new ObjectMappingException(
-							"cannot instantiate abstract class: " + type);
+					if(((Class)type).isAnnotationPresent(JsonTypeInfo.class)){
+						// TODO
+					}
 				} else {
 					obj = ((Class) type).newInstance();
 				}
