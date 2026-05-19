@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.logging.log4j.Logger;
 
+import static org.dieschnittstelle.ess.utils.Utils.show;
+
 /**
  * 
  * CAUTION: THIS IS A RATHER QUICK&DIRTY SOLUTION... !!!
@@ -214,10 +216,25 @@ public class JSONObjectMapper {
 				// check whether we have an abstract class that has jsontype
 				// info present
 				if (Modifier.isAbstract(((Class) type).getModifiers())) {
-					// TODO: include a handling for abstract classes considering
-					// the JsonTypeInfo annotation that might be set on type
+					// check if abstract class has JsonTypeInfo
 					if(((Class)type).isAnnotationPresent(JsonTypeInfo.class)){
-						// TODO
+						JsonTypeInfo jsonTypeInfo = ((Class<?>)type).getAnnotation(JsonTypeInfo.class);
+						// Access the value of the discriminator field property
+						String discriminator = jsonTypeInfo.property(); // @class
+
+						// @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, ... )
+						if(jsonTypeInfo.use() == JsonTypeInfo.Id.CLASS){
+							// org.dieschnittstelle.ess.entities.crm.StationaryTouchpoint
+							JsonNode discriminatorNode = ((ObjectNode) json).get(discriminator);
+							String className = discriminatorNode.textValue();
+							try {
+								// Build the class from name and instance an object of it
+								type = Class.forName(className);
+								obj = ((Class<?>) type).getDeclaredConstructor().newInstance();
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+						}
 					}
 				} else {
 					obj = ((Class) type).newInstance();

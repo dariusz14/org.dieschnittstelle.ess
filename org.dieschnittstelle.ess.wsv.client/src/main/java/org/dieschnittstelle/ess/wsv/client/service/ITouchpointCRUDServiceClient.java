@@ -27,6 +27,6 @@ public interface ITouchpointCRUDServiceClient {
 
 	@PUT
 	@Path("/{touchpointId}")
-	public AbstractTouchpoint updateTouchpoint(@PathParam("touchpointId") long id,AbstractTouchpoint touchpoint);
+	public AbstractTouchpoint updateTouchpoint(@PathParam("touchpointId") long id, AbstractTouchpoint touchpoint);
 
 }
